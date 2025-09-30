@@ -8,8 +8,9 @@ module SPI_Slave(clk,rst_n,MOSI,MISO,SS_n,rx_data,rx_valid,tx_data,tx_valid);
    // Ports Declaration
    input clk,rst_n,MOSI,SS_n,tx_valid;
    input [7:0] tx_data;
-   output reg MISO,rx_valid;
+   output reg MISO;
    output reg [9:0] rx_data;
+   output rx_valid;
    // Internal Signals
    reg [3:0] counter;
    reg [2:0] cs,ns;
@@ -131,6 +132,6 @@ module SPI_Slave(clk,rst_n,MOSI,MISO,SS_n,rx_data,rx_valid,tx_data,tx_valid);
         endcase
       end
    end 
-   
+
    assign rx_valid = ((cs == WRITE || cs == READ_ADD) && counter == 10)?1:0;
 endmodule
