@@ -12,12 +12,12 @@ module SPI_Slave(clk,rst_n,MOSI,MISO,SS_n,rx_data,rx_valid,tx_data,tx_valid);
    output reg [9:0] rx_data;
    output rx_valid;
    // Internal Signals
-   reg [3:0] counter;
    reg [2:0] cs,ns;
+   reg [3:0] counter;
    reg C_READ;
    // State Memory
    always@(posedge clk,negedge rst_n)begin
-      if(rst_n)
+      if(~rst_n)
         cs <= IDLE;
       else 
         cs <= ns;  
@@ -82,12 +82,6 @@ module SPI_Slave(clk,rst_n,MOSI,MISO,SS_n,rx_data,rx_valid,tx_data,tx_valid);
             rx_data <= 0;
             counter <= 0;
           end
-
-        CHK_CMD : begin
-            MISO <= 0;
-            rx_data <= 0;
-            counter <= 0; 
-        end
 
         WRITE : begin
             if(counter < 10)begin
