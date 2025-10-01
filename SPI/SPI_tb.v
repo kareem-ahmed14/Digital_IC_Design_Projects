@@ -68,7 +68,7 @@ module SPI_tb();
     end
 
     SS_n = 1;
-    repeat(1)@(negedge clk);
+    @(negedge clk);
 
     MOSI = 1;
     SS_n = 0;
