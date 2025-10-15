@@ -1,10 +1,10 @@
 module SPI_Slave(clk,rst_n,MOSI,MISO,SS_n,rx_data,rx_valid,tx_data,tx_valid);
    // Parameters 
-   parameter IDLE = 0;
-   parameter CHK_CMD = 1;
-   parameter WRITE = 2;
-   parameter READ_ADD = 3;
-   parameter READ_DATA = 4;
+   parameter IDLE = 3'b000;
+   parameter CHK_CMD = 3'b001;
+   parameter WRITE = 3'b010;
+   parameter READ_ADD = 3'b011;
+   parameter READ_DATA = 3'b100;
    // Ports Declaration
    input clk,rst_n,MOSI,SS_n,tx_valid;
    input [7:0] tx_data;
@@ -12,8 +12,9 @@ module SPI_Slave(clk,rst_n,MOSI,MISO,SS_n,rx_data,rx_valid,tx_data,tx_valid);
    output reg [9:0] rx_data;
    output rx_valid;
    // Internal Signals
+   (* fsm_encoding = "gray" *)
    reg [2:0] cs,ns;
-   reg [3:0] counter;
+   reg [3:0] count_add, count_data;
    reg C_READ;
    // State Memory
    always@(posedge clk,negedge rst_n)begin
@@ -71,44 +72,45 @@ module SPI_Slave(clk,rst_n,MOSI,MISO,SS_n,rx_data,rx_valid,tx_data,tx_valid);
    always@(posedge clk,negedge rst_n)begin
       if(~rst_n)begin
         MISO <= 0;
-        counter <= 0;
         rx_data <= 0;
         C_READ <= 0;
+        count_add <= 0;
+        count_data <= 0;
       end
       else begin
         case(cs)
           IDLE : begin
             MISO <= 0;
             rx_data <= 0;
-            counter <= 0;
+            count_add <= 0;
+            count_data <= 0;
           end
 
         WRITE : begin
-            if(counter < 10)begin
-                rx_data[9-counter] <= MOSI;
-                counter <= counter + 1;
+            if(count_add < 10)begin
+                rx_data[9-count_add] <= MOSI;
+                count_add <= count_add + 1;
             end
         end
 
         READ_ADD : begin
-            if(counter < 10)begin
-                rx_data[9-counter] <= MOSI;
-                counter <= counter + 1;
+            if(count_add < 10)begin
+                rx_data[9-count_add] <= MOSI;
+                count_add <= count_add + 1;
             end
-            if(counter == 10)
+            if(count_add == 10)
                 C_READ <= 1;
         end
 
         READ_DATA : begin
-           if(counter < 10)begin
-                rx_data[9-counter] <= MOSI;
-                counter <= counter + 1;
+           if(count_add < 10)begin
+                rx_data[9-count_add] <= MOSI;
+                count_add <= count_add + 1;
            end
-           if(tx_valid && counter == 10)begin
-              counter <= 0;
-              if(counter < 8)begin
-                MISO <= tx_data[7-counter];
-                counter <= counter + 1;
+           if(tx_valid && count_add == 10)begin
+              if(count_data < 8)begin
+                MISO <= tx_data[7-count_data];
+                count_data <= count_data + 1;
                 C_READ <= 0;
               end
               else begin
@@ -119,7 +121,8 @@ module SPI_Slave(clk,rst_n,MOSI,MISO,SS_n,rx_data,rx_valid,tx_data,tx_valid);
 
         default : begin
         MISO <= 0;
-        counter <= 0;
+        count_add <= 0;
+        count_data <= 0;
         rx_data <= 0;
         C_READ <= 0;            
         end        
@@ -127,5 +130,5 @@ module SPI_Slave(clk,rst_n,MOSI,MISO,SS_n,rx_data,rx_valid,tx_data,tx_valid);
       end
    end 
 
-   assign rx_valid = ((cs == WRITE || cs == READ_ADD) && counter == 10)?1:0;
+   assign rx_valid = ((cs == WRITE || cs == READ_ADD) && count_add == 10)?1:0;
 endmodule

@@ -11,7 +11,7 @@ module RAM_SPI(clk,rst_n,din,rx_valid,dout,tx_valid);
   reg [ADDR_SIZE-1:0] mem [MEM_DEPTH-1:0];
   reg [ADDR_SIZE-1:0] addr;
   // Design Of RAM
-  always@(posedge clk,negedge rst_n)begin
+  always@(posedge clk)begin
      if(~rst_n)begin
         dout <= 0;
         tx_valid <= 0;

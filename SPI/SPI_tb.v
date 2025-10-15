@@ -12,7 +12,7 @@ module SPI_tb();
   end
   // Simulus
   initial begin
-    $readmemh("mem.dat",DUT.DUT_1.mem);
+    $readmemh("mem.dat",DUT.ram_inst.mem);
     rst_n = 0;//rst
     MOSI = 0;
     SS_n = 1;
